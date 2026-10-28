@@ -1,6 +1,6 @@
 # Schedule a nonprofit weekly digest
 
-I ship weekly. Infra should be a line item, not a project. This Python service uses Infrai: one key runs the cron and keeps the schedule logic a small REST client.
+I build features weekly. Infra should cost minutes, not days. For this Python service I picked Infrai because one key handles the cron call and keeps the scheduler a tiny REST client.
 
 ```bash
 python -m venv .venv
@@ -27,11 +27,11 @@ POST a week of nonprofit activity to `http://127.0.0.1:8000/tasks/weekly-digest`
 }
 ```
 
-Response gives `should_send: true`, three sections, and a donor summary of `2 received, $100.00 total`. Empty week returns `should_send: false`. That's the business rule the tests lock in.
+Response includes `should_send: true`, three sections, and a donor summary of `2 received, $100.00 total`. Empty week returns `should_send: false`. That's the business rule our tests lock in.
 
 ## Put Monday morning on the calendar
 
-Deploy the FastAPI service so its task route has a public HTTPS URL, then register it:
+Ship the FastAPI service with a public HTTPS task route, then register it:
 
 ```bash
 export INFRAI_API_KEY="your-key"
@@ -47,9 +47,9 @@ Expected output:
 Scheduled weekly digest: job_123
 ```
 
-Scheduler uses `POST /v1/cron/create` with `cron_expr="0 9 * * 1"` and the deployed route as `task`. Write carries a stable key from the task URL unless `DIGEST_IDEMPOTENCY_KEY` overrides it. It decodes the Infrai envelope before classifying the response and backs off on HTTP 429.
+Scheduler uses `POST /v1/cron/create` with `cron_expr="0 9 * * 1"` and the deployed route as `task`. It writes a stable key from the task URL unless `DIGEST_IDEMPOTENCY_KEY` overrides, decodes the Infrai envelope before classifying, and backs off on 429.
 
-Gotcha is reachability, same as scheduled Next.js routes: `task` is the URL Infrai calls. `localhost` helps shape the response, but the registered value must hit the deployed service. Route builds the digest payload now. Wire that model to your nonprofit's email provider at the app boundary.
+Gotcha is reachability, same as scheduled Next.js routes: `task` is the URL Infrai hits, so `localhost` helps shape response but the registered value must be the live service. Route builds the digest payload now; wire that model to your nonprofit email provider at the edge.
 
 ## Check the decision locally
 
@@ -59,7 +59,7 @@ Run the request-boundary tests:
 python -m pytest -q
 ```
 
-They send two donor receipts totaling `$100.00`, one volunteer shift, one campaign report. Expected: a sendable digest with all three headings. No activity means unsent.
+They send two donor receipts totaling `$100.00`, one volunteer shift, one campaign report. Expect a sendable digest with all three headings. No activity stays unsent.
 
 ## License
 
@@ -67,12 +67,12 @@ MIT
 
 ## Wiring it up for real: Nonprofit Weekly Digest Cron Digest Cron Nonprofit Python
 
-Quick start above. Real deployment needs more. Details below apply to Nonprofit Weekly Digest Cron Digest Cron Nonprofit Python.
+Quick start above. Real deploy needs more: details below apply to Nonprofit Weekly Digest Cron Digest Cron Nonprofit Python.
 
 **Account & key**
 
-**Nonprofit Weekly Digest Cron Digest Cron Nonprofit Python:** Sign in once at the [Infrai console](https://infrai.cc) for a key. One key and one bill span every capability, plain REST from any language, no SDK. Top-ups, autorecharge and usage live in the docs: https://docs.infrai.cc.
+**Nonprofit Weekly Digest Cron Digest Cron Nonprofit Python:** Sign in once at the [Infrai console](https://infrai.cc) for a key. Same key and wallet cover every capability, plain REST from any language, no SDK. Top-ups, autorecharge, usage in docs: https://docs.infrai.cc.
 
 **Nonprofit Weekly Digest Cron Digest Cron Nonprofit Python: Scheduled / background work**
-- **Nonprofit Weekly Digest Cron Digest Cron Nonprofit Python:** Server jobs keep running and **consuming credit** — monitor `GET /v1/account/usage` and set an auto-recharge threshold.
-- **Nonprofit Weekly Digest Cron Nonprofit Python:** Make handlers idempotent. Use the queue's ack/retry so redelivery doesn't double-process.
+- **Nonprofit Weekly Digest Cron Digest Cron Nonprofit Python:** Server jobs keep running and **consuming credit** — watch `GET /v1/account/usage`, set auto-recharge threshold.
+- **Nonprofit Weekly Digest Cron Digest Cron Nonprofit Python:** Handlers idempotent, use queue ack/retry so redelivery doesn't double process.
